@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Training AI Models Environmental Impact</title> 
+
+    </head>
+
+    <link rel=stylesheet href="stylesheet.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <body>
+        <div class="container">
+            <div class="header">
+                <h1>Environmental Impact of Training AI Models</h1>
+                <p>Tracking and visualizing the carbon footprint of artificial intelligence training and inference</p>
+            </div>
+
+            <div class="file-upload">
+                <h3>Upload Your Emission Data</h3>
+                <p>Upload a CSV file from code carbon to analyze your AI model's environmental impact.</p>
+                <input type="file" id="fileInput" accept=".csv" />
+                <button class="upload-button" onclick="document.getElementById('fileInput').click()">
+                    choose CSV file
+                </button>
+                <button class="upload-button" onclick="loadSampleData()">
+                    load sample data
+                </button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stats-card">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-fire-flame-simple"></i>
+                    </div>
+                    <div class="stat-value" id="totalEmissions">0</div>
+                    <div class="stat-label">Total CO2 Emissions (Kg)</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <div class="stat-value" id="totalEnergy">0</div>
+                    <div class="stat-label">Total Energy (kWh)</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div class="stat-value" id="totalDuration">0</div>
+                    <div class="stat-label">Total Training Time (min)</div>
+                </div>
+                <div class="stats-card">
+                    <div class="stat-icon">
+                        <i class="fa-solid fa-rocket"></i>
+                    </div>
+                    <div class="stat-value" id="totalRuns">0</div>
+                    <div class="stat-label">Training Runs</div>
+                </div>
+            </div>
+
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3 class="chart-title">Emissions over time</h3>
+                    <canvas id="emission-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3 class="chart-title">Energy consumption breakdown</h3>
+                    <canvas id="energy-chart"></canvas>
+                </div>
+            </div>
+
+            <div class="data-table">
+                <div class="table-header">Training Data Details</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Duration (min)</th>
+                            <th>CO₂ Emissions (g)</th>
+                            <th>Energy (Wh)</th>
+                            <th>Hardware</th>
+                        </tr>
+                    </thead>
+                    <tbody id="dataTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: #999;">No data loaded. Please upload a CSV file.</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </div>
+        <script src="script.js"></script>
+    </body>
+</html>
