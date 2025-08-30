@@ -33,12 +33,7 @@ function setupEventListeners() {
 
 setupEventListeners();
 
-function parseCSV(csvContent) {
-    const lines = csvContent.split('\n');
-    const headers = lines[0].split(',');
-    const dataRows = lines.slice(1);
-    return { headers, dataRows}
-}
+
 function handleFileUpload(event) {
     const file = event.target.files[0];
     console.log("File selected:", file.name);
@@ -47,8 +42,25 @@ function handleFileUpload(event) {
 
     reader.onload = function (e) {
         const csvContent = e.target.result;
-        const parsedData = parseCSV(csvContent);
-        console.log("CSV content:", csvContent);
+        const lines = csvContent.split('\n');
+        const headers = lines[0].split(',');
+        const dataRows = lines.slice(1);
+        console.log("Parsed into:", {headers, dataRows});
+
+        const dataObjects = [];
+
+        for (let i = 0; i < dataRows.length; i ++) {
+            const row = dataRows[i].split(',');
+            console.log("Processing Row", row);
+
+            const object = {}
+            for (let j = 0; j < headers.length; j++) {
+                object[headers[j]] = row[j];
+            }
+            console.log("Row object:", object);
+        }
+
+        console.log("Final Objects:", dataObjects);
     };
 
     reader.readAsText(file);
