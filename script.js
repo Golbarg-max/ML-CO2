@@ -24,10 +24,38 @@ function setupEventListeners() {
             handleFileUpload(event);
         });
     }
+
+    const SampleData = document.querySelector('button[onclick="loadSampleData()"]')
+    if (SampleData) {
+        SampleData.addEventListener('click', loadSampleData);
+    }
 }
 
+setupEventListeners();
+
+function parseCSV(csvContent) {
+    const lines = csvContent.split('\n');
+    const headers = lines[0].split(',');
+    const dataRows = lines.slice(1);
+    return { headers, dataRows}
+}
 function handleFileUpload(event) {
     const file = event.target.files[0];
     console.log("File selected:", file.name);
+
+    const reader = new FileReader();
+
+    reader.onload = function (e) {
+        const csvContent = e.target.result;
+        const parsedData = parseCSV(csvContent);
+        console.log("CSV content:", csvContent);
+    };
+
+    reader.readAsText(file);
 }
-setupEventListeners();
+
+
+function loadSampleData() {
+    console.log("sample data");
+}
+
