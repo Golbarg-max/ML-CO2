@@ -53,9 +53,16 @@ function handleFileUpload(event) {
             const row = dataRows[i].split(',');
             console.log("Processing Row", row);
 
-            const object = {}
+            const object = {};
+            const listHeaders = ["duration", "emissions", "energy_consumed"];
+            
             for (let j = 0; j < headers.length; j++) {
-                object[headers[j]] = row[j];
+                if (listHeaders.includes(headers[j])) {
+                    object[headers[j]] = Number(row[j]);
+                }
+                else {
+                    object[headers[j]] = row[j];
+                }
             }
             console.log("Row object:", object);
         }
