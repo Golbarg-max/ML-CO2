@@ -64,15 +64,24 @@ function handleFileUpload(event) {
                     object[headers[j]] = row[j];
                 }
             }
+            dataObjects[i] = object
             console.log("Row object:", object);
         }
-
         console.log("Final Objects:", dataObjects);
+        const dataTableBody = document.getElementById("dataTableBody");
+        const columnProperties = ["timestamp", "duration", "emissions", "energy_consumed", "cpu_model"];
+        dataTableBody.innerHTML = "";
+        for (let i = 0; i < dataObjects.length; i++) {
+           var newRow = dataTableBody.insertRow();
+           for (let j = 0; j < columnProperties.length; j++) {
+            var newCell = newRow.insertCell(j)
+            newCell.innerHTML = dataObjects[i][columnProperties[j]];
+           }
+        }
     };
 
     reader.readAsText(file);
 }
-
 
 function loadSampleData() {
     console.log("sample data");
