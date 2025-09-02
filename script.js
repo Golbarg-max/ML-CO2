@@ -75,7 +75,22 @@ function handleFileUpload(event) {
            var newRow = dataTableBody.insertRow();
            for (let j = 0; j < columnProperties.length; j++) {
             var newCell = newRow.insertCell(j)
-            newCell.innerHTML = dataObjects[i][columnProperties[j]];
+            if (j == 0) {
+                const date = new Date(dataObjects[i][columnProperties[j]]);
+                const options = {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                };
+                newCell.innerHTML = date.toLocaleDateString(undefined, options);
+            } else if (j==1) {
+                newCell.innerHTML = ((dataObjects[i][columnProperties[j]])/60).toFixed(4);
+            } else if (j==2) {
+                newCell.innerHTML = ((dataObjects[i][columnProperties[j]])*1000).toFixed(7);
+            } else if (j == 3) {
+                newCell.innerHTML = (dataObjects[i][columnProperties[j]]).toFixed(8);
+            } else
+                newCell.innerHTML = dataObjects[i][columnProperties[j]];
            }
         }
     };
