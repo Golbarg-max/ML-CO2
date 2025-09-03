@@ -15,7 +15,6 @@ durationTotal.textContent = duration;
 
 }
 
-updateStats("5.21", "2.23", "4", "5");
 
 function setupEventListeners() {
     const fileInput = document.getElementById("fileInput");
@@ -71,7 +70,12 @@ function handleFileUpload(event) {
         const dataTableBody = document.getElementById("dataTableBody");
         const columnProperties = ["timestamp", "duration", "emissions", "energy_consumed", "cpu_model"];
         dataTableBody.innerHTML = "";
-        for (let i = 0; i < dataObjects.length; i++) {
+        let totalRuns = 0;
+        let totalTime = 0;
+        let totalEmission = 0;
+        let totalEnergy = 0;
+        for (let i = 0; i < dataObjects.length - 1; i++) {
+           totalRuns += 1;
            var newRow = dataTableBody.insertRow();
            for (let j = 0; j < columnProperties.length; j++) {
             var newCell = newRow.insertCell(j)
@@ -84,14 +88,28 @@ function handleFileUpload(event) {
                 };
                 newCell.innerHTML = date.toLocaleDateString(undefined, options);
             } else if (j==1) {
-                newCell.innerHTML = ((dataObjects[i][columnProperties[j]])/60).toFixed(4);
+                const timeOneRun = dataObjects[i][columnProperties[j]];
+                totalTime += timeOneRun
+                newCell.innerHTML = ((timeOneRun)/60).toFixed(4);
             } else if (j==2) {
-                newCell.innerHTML = ((dataObjects[i][columnProperties[j]])*1000).toFixed(7);
+                const timeOneEmission = dataObjects[i][columnProperties[j]];
+                totalEmission += timeOneEmission;
+                newCell.innerHTML = ((timeOneEmission)*1000).toFixed(7);
             } else if (j == 3) {
-                newCell.innerHTML = (dataObjects[i][columnProperties[j]]).toFixed(8);
+                const energyOneRun = dataObjects[i][columnProperties[j]];
+                totalEnergy += energyOneRun;
+                newCell.innerHTML = (energyOneRun).toFixed(8);
             } else
                 newCell.innerHTML = dataObjects[i][columnProperties[j]];
            }
+        }
+        totalTime = totalTime.toFixed(2);
+        totalEnergy = (totalEnergy).toFixed(5);
+        totalEmission = (totalEmission * 1000).toFixed(5);
+        if (totalRuns != 0) {
+            updateStats(totalEmission, totalEnergy, totalRuns, totalTime);
+        } else {
+            updateStats("5.21", "2.23", "4", "5");
         }
     };
 
