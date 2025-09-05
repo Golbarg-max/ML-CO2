@@ -1,6 +1,6 @@
 // Ai environmental impact dashboard javascript
 // Version 1.0
-
+console.log("Chart object:", typeof Chart);
 function updateStats(emission, energy, runs, duration) {
 
 const emissionTotal = document.getElementById('totalEmissions');
@@ -53,7 +53,7 @@ function handleFileUpload(event) {
             console.log("Processing Row", row);
 
             const object = {};
-            const listHeaders = ["duration", "emissions", "energy_consumed"];
+            const listHeaders = ["duration", "emissions", "energy_consumed", "cpu_energy", "gpu_energy", "ram_energy"];
             
             for (let j = 0; j < headers.length; j++) {
                 if (listHeaders.includes(headers[j])) {
@@ -67,6 +67,16 @@ function handleFileUpload(event) {
             console.log("Row object:", object);
         }
         console.log("Final Objects:", dataObjects);
+
+        let totalCpuEnergy = 0;
+        let totalGpuEnergy = 0;
+        let totalRamEnergy = 0;
+        for (let i = 0; i < dataObjects.length - 1; i++) {
+            totalCpuEnergy += dataObjects[i].cpu_energy;
+            totalGpuEnergy += dataObjects[i].gpu_energy;
+            totalRamEnergy += dataObjects[i].ram_energy;
+        }
+        createEnergyChart(totalCpuEnergy, totalGpuEnergy, totalRamEnergy);
         const dataTableBody = document.getElementById("dataTableBody");
         const columnProperties = ["timestamp", "duration", "emissions", "energy_consumed", "cpu_model"];
         dataTableBody.innerHTML = "";
@@ -74,6 +84,7 @@ function handleFileUpload(event) {
         let totalTime = 0;
         let totalEmission = 0;
         let totalEnergy = 0;
+        
         for (let i = 0; i < dataObjects.length - 1; i++) {
            totalRuns += 1;
            var newRow = dataTableBody.insertRow();
@@ -118,5 +129,23 @@ function handleFileUpload(event) {
 
 function loadSampleData() {
     console.log("sample data");
+}
+
+function createEnergyChart(cpuEnergy, gpuEnergy, ramEnergy) {
+    const energyChart = document.getElementById("energy-chart");
+    const xValues = ["CPU", "GPU", "RAM"];
+    const yValues = [cpuEnergy, gpuEnergy, ramEnergy];
+    const barColors = ["#ff6384", "#36a2eb", "#ffce56"];
+    if (!energyChart) return;
+    new Chart(energyChart, {
+        type: 'pie',
+        data: {
+            labels: xValues,
+            datasets: [{
+                backgroundColor: barColors,
+                data: yValues
+            }]
+        },
+    })
 }
 
