@@ -133,19 +133,26 @@ function loadSampleData() {
 
 function createEnergyChart(cpuEnergy, gpuEnergy, ramEnergy) {
     const energyChart = document.getElementById("energy-chart");
-    const xValues = ["CPU", "GPU", "RAM"];
     const yValues = [cpuEnergy, gpuEnergy, ramEnergy];
-    const barColors = ["#ff6384", "#36a2eb", "#ffce56"];
+    const barColors = ["#92BBDE", "#4C8EC8", "#1C3D5A"];
+    const xValues = ["CPU", "GPU", "RAM"];
     if (!energyChart) return;
     new Chart(energyChart, {
         type: 'pie',
         data: {
-            labels: xValues,
             datasets: [{
                 backgroundColor: barColors,
                 data: yValues
-            }]
+            }],
+            labels: xValues,
         },
+        options: {
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            } 
+        }
     })
 }
 
