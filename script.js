@@ -71,12 +71,17 @@ function handleFileUpload(event) {
         let totalCpuEnergy = 0;
         let totalGpuEnergy = 0;
         let totalRamEnergy = 0;
+        let timestamp = [];
+        let emissions = []; //arrays for line chart
         for (let i = 0; i < dataObjects.length - 1; i++) {
             totalCpuEnergy += dataObjects[i].cpu_energy;
+            timestamp.push(new Date(dataObjects[i].timestamp).toLocaleTimeString());
+            emissions.push((dataObjects[i].emissions)*1000);
             totalGpuEnergy += dataObjects[i].gpu_energy;
             totalRamEnergy += dataObjects[i].ram_energy;
         }
         createEnergyChart(totalCpuEnergy, totalGpuEnergy, totalRamEnergy);
+        createEmissionChart(timestamp, emissions);
         const dataTableBody = document.getElementById("dataTableBody");
         const columnProperties = ["timestamp", "duration", "emissions", "energy_consumed", "cpu_model"];
         dataTableBody.innerHTML = "";
@@ -156,3 +161,20 @@ function createEnergyChart(cpuEnergy, gpuEnergy, ramEnergy) {
     })
 }
 
+function createEmissionChart(times, ems){
+    const emissionChart = document.getElementById("emission-chart");
+    const xValues = times;
+    const yValues = ems;
+    if (!emissionChart) return;
+    new Chart(emissionChart, {
+        type: 'line',
+        data: {
+            datasets: [{
+                label: 'CO2 emissions',
+                backgroundColor: '#92BBDE',
+                data: yValues,
+            }],
+            labels: xValues,
+        }
+    })
+}
