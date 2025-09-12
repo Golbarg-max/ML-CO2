@@ -1,12 +1,15 @@
 // Ai environmental impact dashboard javascript
 // Version 1.0
 console.log("Chart object:", typeof Chart);
+let energyChartInstance = null;
+let emissionChartInstance = null;
 function updateStats(emission, energy, runs, duration) {
 
 const emissionTotal = document.getElementById('totalEmissions');
 const energyTotal = document.getElementById('totalEnergy');
 const runsTotal = document.getElementById('totalRuns');
 const durationTotal = document.getElementById('totalDuration');
+
 
 emissionTotal.textContent = emission;
 energyTotal.textContent = energy;
@@ -67,8 +70,76 @@ function handleFileUpload(event) {
             console.log("Row object:", object);
         }
         console.log("Final Objects:", dataObjects);
+        processDashboardData(dataObjects);
+    };
 
-        let totalCpuEnergy = 0;
+    reader.readAsText(file);
+}
+
+function loadSampleData() {
+    const  dataObjects = [
+        {
+            timestamp: "2025-06-24T17:14:20",
+            duration: 0.0054481029510498,
+            emissions: 1.6128256009102798e-10,
+            energy_consumed: 1.1603832244873048e-08,
+            cpu_power: 5.0,
+            gpu_power: 0.0,
+            ram_power: 3.0,
+            cpu_energy: 5.0 * 0.0054481029510498 / 3600,
+            gpu_energy: 0.0,
+            ram_energy: 3.0 * 0.0054481029510498 / 3600,
+            cpu_model: "Apple M1",
+            project_name: "codecarbon",
+        },
+        {
+            timestamp: "2025-06-24T17:48:47",
+            duration: 9.371752977371216,
+            emissions: 2.893805034872157e-07,
+            energy_consumed: 2.082012348704868e-05,
+            cpu_power: 5.0,
+            gpu_power: 0.0,
+            ram_power: 3.0,
+            cpu_energy: 5.0 * 9.371752977371216 / 3600,
+            gpu_energy: 0.0,
+            ram_energy: 3.0 * 9.371752977371216 / 3600,
+            cpu_model: "Apple M1",
+            project_name: "codecarbon"
+        },
+        {
+            timestamp: "2025-06-24T18:22:47",
+            duration: 0.9291698932647704,
+            emissions: 2.86921510553026e-08,
+            energy_consumed: 2.064320577515496e-06,
+            cpu_power: 5.0,
+            gpu_power: 0.0,
+            ram_power: 3.0,
+            cpu_energy: 5.0 * 0.9291698932647704 / 3600,
+            gpu_energy: 0.0,
+            ram_energy: 3.0 * 0.9291698932647704 / 3600,
+            cpu_model: "Apple M1",
+            project_name: "codecarbon"
+        },
+        {
+            timestamp: "2025-06-24T18:30:06",
+            duration: 1.8643088340759277,
+            emissions: 5.7569282010073586e-08,
+            energy_consumed: 4.141949945025975e-06,
+            cpu_power: 5.0,
+            gpu_power: 0.0,
+            ram_power: 3.0,
+            cpu_energy: 5.0 * 1.8643088340759277 / 3600,
+            gpu_energy: 0.0,
+            ram_energy: 3.0 * 1.8643088340759277 / 3600,
+            cpu_model: "Apple M1",
+            project_name: "codecarbon"
+        }
+    ];
+    processDashboardData(dataObjects);
+}
+
+function processDashboardData(dataObjects) {
+    let totalCpuEnergy = 0;
         let totalGpuEnergy = 0;
         let totalRamEnergy = 0;
         let timestamp = [];
@@ -127,22 +198,18 @@ function handleFileUpload(event) {
         } else {
             updateStats("5.21", "2.23", "4", "5");
         }
-    };
-
-    reader.readAsText(file);
-}
-
-function loadSampleData() {
-    console.log("sample data");
 }
 
 function createEnergyChart(cpuEnergy, gpuEnergy, ramEnergy) {
+    if (energyChartInstance) {
+        energyChartInstance.destroy(); 
+    }
     const energyChart = document.getElementById("energy-chart");
     const yValues = [cpuEnergy, gpuEnergy, ramEnergy];
     const barColors = ["#92BBDE", "#4C8EC8", "#1C3D5A"];
     const xValues = ["CPU", "GPU", "RAM"];
     if (!energyChart) return;
-    new Chart(energyChart, {
+    energyChartInstance =  new Chart(energyChart, {
         type: 'pie',
         data: {
             datasets: [{
@@ -162,11 +229,14 @@ function createEnergyChart(cpuEnergy, gpuEnergy, ramEnergy) {
 }
 
 function createEmissionChart(times, ems){
+    if (emissionChartInstance) {
+        emissionChartInstance.destroy();
+    }
     const emissionChart = document.getElementById("emission-chart");
     const xValues = times;
     const yValues = ems;
     if (!emissionChart) return;
-    new Chart(emissionChart, {
+    emissionChartInstance = new Chart(emissionChart, {
         type: 'line',
         data: {
             datasets: [{
