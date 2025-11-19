@@ -38,14 +38,33 @@ setupEventListeners();
 
 function handleFileUpload(event) {
     const file = event.target.files[0];
+    if (!file){
+        alert("Please select a file first.");
+        return;
+    }
     console.log("File selected:", file.name);
 
-    const reader = new FileReader();
+    if (!(file.name.toLowerCase().endsWith(".csv"))) {
+        alert("Please upload a CSV file.")
+        return;
+    } else if (file.type && !file.type.includes("csv")) {
+        alert("Please upload a CSV file.");
+        return;
+    } else if (file.size > 10 * 1024 * 1024) {
+        alert("File is too big. Maximum size is 10MB");
+        return;
+    }
 
+
+    const reader = new FileReader();
     reader.onload = function (e) {
+        try {
         const csvContent = e.target.result;
-        const lines = csvContent.split('\n');
-        const headers = lines[0].split(',');
+        const lines = csvContent.split('\n').filter(line => line.trim() !== '');
+        if (lines.length < 2) {
+            throw new Error("CSV file is empty or has no rows");
+        }
+        const headers = lines[0].split(',').map(header => header.trim());
         const dataRows = lines.slice(1);
         console.log("Parsed into:", {headers, dataRows});
 
@@ -53,24 +72,43 @@ function handleFileUpload(event) {
 
         for (let i = 0; i < dataRows.length; i ++) {
             const row = dataRows[i].split(',');
+            if (row.length == 0 || (row.length == 1 && row[0].trim == '')) {
+                continue;
+            }
             console.log("Processing Row", row);
 
             const object = {};
             const listHeaders = ["duration", "emissions", "energy_consumed", "cpu_energy", "gpu_energy", "ram_energy"];
             
             for (let j = 0; j < headers.length; j++) {
-                if (listHeaders.includes(headers[j])) {
-                    object[headers[j]] = Number(row[j]);
+                if (j >= row.length) {
+                    object[headers[j]] = null;
+                } else if (listHeaders.includes(headers[j])) {
+                    object[headers[j]] = Number(row[j]) || 0;
                 }
                 else {
-                    object[headers[j]] = row[j];
+                    object[headers[j]] = row[j].trim(); 
                 }
             }
-            dataObjects[i] = object
+            dataObjects.push(object);
             console.log("Row object:", object);
         }
+        if (dataObjects.length == 0) {
+            throw new Error("No valid data found in CSV file");
+        }
+
         console.log("Final Objects:", dataObjects);
-        processDashboardData(dataObjects);
+        processDashboardData(dataObjects); 
+
+    } catch (error) {
+        console.error("Error processing file:", error);
+        alert("Error processing file: " + error.message);
+        }
+    };
+
+    reader.onerror = function () {
+        console.error("Error reading file:");
+        alert("Error reading file. Please try again.");
     };
 
     reader.readAsText(file);
@@ -161,7 +199,7 @@ function processDashboardData(dataObjects) {
         let totalEmission = 0;
         let totalEnergy = 0;
         
-        for (let i = 0; i < dataObjects.length - 1; i++) {
+        for (let i = 0; i < dataObjects.length; i++) {
            totalRuns += 1;
            var newRow = dataTableBody.insertRow();
            for (let j = 0; j < columnProperties.length; j++) {
