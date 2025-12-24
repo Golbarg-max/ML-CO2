@@ -184,6 +184,8 @@ function loadSampleData() {
 function processDashboardData(dataObjects) {
     if (dataObjects.length === 0){
         updateStats(0, 0, 0, 0);
+        const dataTableBody = document.getElementById("dataTableBody");
+        dataTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data loaded. Please upload a CSV file.</td></tr>';
     } else {
     let totalCpuEnergy = 0;
         let totalGpuEnergy = 0;
