@@ -27,9 +27,14 @@ function setupEventListeners() {
         });
     }
 
-    const SampleData = document.querySelector('button[onclick="loadSampleData()"]')
+    const SampleData = document.getElementById("sampleData")
     if (SampleData) {
         SampleData.addEventListener('click', loadSampleData);
+    }
+
+    const ResetData = document.getElementById("resetFile")
+    if (ResetData) {
+        ResetData.addEventListener('click', resetData)
     }
 }
 
@@ -72,7 +77,7 @@ function handleFileUpload(event) {
 
         for (let i = 0; i < dataRows.length; i ++) {
             const row = dataRows[i].split(',');
-            if (row.length == 0 || (row.length == 1 && row[0].trim == '')) {
+            if (row.length == 0 || (row.length == 1 && row[0].trim())) {
                 continue;
             }
             console.log("Processing Row", row);
@@ -177,12 +182,15 @@ function loadSampleData() {
 }
 
 function processDashboardData(dataObjects) {
+    if (dataObjects.length === 0){
+        updateStats(0, 0, 0, 0);
+    } else {
     let totalCpuEnergy = 0;
         let totalGpuEnergy = 0;
         let totalRamEnergy = 0;
         let timestamp = [];
         let emissions = []; //arrays for line chart
-        for (let i = 0; i < dataObjects.length - 1; i++) {
+        for (let i = 0; i < dataObjects.length; i++) {
             totalCpuEnergy += dataObjects[i].cpu_energy;
             timestamp.push(new Date(dataObjects[i].timestamp).toLocaleTimeString());
             emissions.push((dataObjects[i].emissions)*1000);
@@ -201,9 +209,9 @@ function processDashboardData(dataObjects) {
         
         for (let i = 0; i < dataObjects.length; i++) {
            totalRuns += 1;
-           var newRow = dataTableBody.insertRow();
+           const newRow = dataTableBody.insertRow();
            for (let j = 0; j < columnProperties.length; j++) {
-            var newCell = newRow.insertCell(j)
+            const newCell = newRow.insertCell(j)
             if (j == 0) {
                 const date = new Date(dataObjects[i][columnProperties[j]]);
                 const options = {
@@ -231,11 +239,8 @@ function processDashboardData(dataObjects) {
         totalTime = totalTime.toFixed(2);
         totalEnergy = (totalEnergy).toFixed(5);
         totalEmission = (totalEmission * 1000).toFixed(5);
-        if (totalRuns != 0) {
-            updateStats(totalEmission, totalEnergy, totalRuns, totalTime);
-        } else {
-            updateStats("5.21", "2.23", "4", "5");
-        }
+        updateStats(totalEmission, totalEnergy, totalRuns, totalTime);
+    }
 }
 
 function createEnergyChart(cpuEnergy, gpuEnergy, ramEnergy) {
@@ -266,6 +271,7 @@ function createEnergyChart(cpuEnergy, gpuEnergy, ramEnergy) {
     })
 }
 
+
 function createEmissionChart(times, ems){
     if (emissionChartInstance) {
         emissionChartInstance.destroy();
@@ -286,3 +292,14 @@ function createEmissionChart(times, ems){
         }
     })
 }
+
+function resetData() {
+    if (emissionChartInstance) {
+        emissionChartInstance.destroy();
+    }
+    if (energyChartInstance) {
+        energyChartInstance.destroy();
+    }
+    let dataObjects = [];
+    processDashboardData(dataObjects);
+}   
