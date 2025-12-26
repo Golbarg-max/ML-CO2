@@ -1,5 +1,18 @@
 // Ai environmental impact dashboard javascript
 // Version 1.0
+
+const Emission_MULTIPLIER = 1000;
+const SECONDS_TO_MINUTES = 60;
+const SECONDS_TO_HOURS = 3600; 
+
+function convertEmissions(emissionValue) {
+    return emissionValue * Emission_MULTIPLIER;
+}
+
+function timeConversion(timeValue) {
+    return timeValue / SECONDS_TO_HOURS;
+}
+
 console.log("Chart object:", typeof Chart);
 let energyChartInstance = null;
 let emissionChartInstance = null;
@@ -129,9 +142,9 @@ function loadSampleData() {
             cpu_power: 5.0,
             gpu_power: 0.0,
             ram_power: 3.0,
-            cpu_energy: 5.0 * 0.0054481029510498 / 3600,
+            cpu_energy: timeConversion(5.0 * 0.0054481029510498),
             gpu_energy: 0.0,
-            ram_energy: 3.0 * 0.0054481029510498 / 3600,
+            ram_energy: timeConversion(3.0 * 0.0054481029510498),
             cpu_model: "Apple M1",
             project_name: "codecarbon",
         },
@@ -143,9 +156,9 @@ function loadSampleData() {
             cpu_power: 5.0,
             gpu_power: 0.0,
             ram_power: 3.0,
-            cpu_energy: 5.0 * 9.371752977371216 / 3600,
+            cpu_energy: timeConversion(5.0 * 9.371752977371216),
             gpu_energy: 0.0,
-            ram_energy: 3.0 * 9.371752977371216 / 3600,
+            ram_energy: timeConversion(3.0 * 9.371752977371216),
             cpu_model: "Apple M1",
             project_name: "codecarbon"
         },
@@ -157,9 +170,9 @@ function loadSampleData() {
             cpu_power: 5.0,
             gpu_power: 0.0,
             ram_power: 3.0,
-            cpu_energy: 5.0 * 0.9291698932647704 / 3600,
+            cpu_energy: timeConversion(5.0 * 0.9291698932647704),
             gpu_energy: 0.0,
-            ram_energy: 3.0 * 0.9291698932647704 / 3600,
+            ram_energy: timeConversion(3.0 * 0.9291698932647704),
             cpu_model: "Apple M1",
             project_name: "codecarbon"
         },
@@ -171,9 +184,9 @@ function loadSampleData() {
             cpu_power: 5.0,
             gpu_power: 0.0,
             ram_power: 3.0,
-            cpu_energy: 5.0 * 1.8643088340759277 / 3600,
+            cpu_energy: timeConversion(5.0 * 1.8643088340759277),
             gpu_energy: 0.0,
-            ram_energy: 3.0 * 1.8643088340759277 / 3600,
+            ram_energy: timeConversion(3.0 * 1.8643088340759277),
             cpu_model: "Apple M1",
             project_name: "codecarbon"
         }
@@ -181,41 +194,51 @@ function loadSampleData() {
     processDashboardData(dataObjects);
 }
 
-function processDashboardData(dataObjects) {
-    if (dataObjects.length === 0){
-        updateStats(0, 0, 0, 0);
-        const dataTableBody = document.getElementById("dataTableBody");
-        dataTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data loaded. Please upload a CSV file.</td></tr>';
-    } else {
+function calculateEnergyTotals(dataObjects){
     let totalCpuEnergy = 0;
-        let totalGpuEnergy = 0;
-        let totalRamEnergy = 0;
-        let timestamp = [];
-        let emissions = []; //arrays for line chart
-        for (let i = 0; i < dataObjects.length; i++) {
-            totalCpuEnergy += dataObjects[i].cpu_energy;
-            timestamp.push(new Date(dataObjects[i].timestamp).toLocaleTimeString());
-            emissions.push((dataObjects[i].emissions)*1000);
-            totalGpuEnergy += dataObjects[i].gpu_energy;
-            totalRamEnergy += dataObjects[i].ram_energy;
-        }
-        createEnergyChart(totalCpuEnergy, totalGpuEnergy, totalRamEnergy);
-        createEmissionChart(timestamp, emissions);
-        const dataTableBody = document.getElementById("dataTableBody");
-        const columnProperties = ["timestamp", "duration", "emissions", "energy_consumed", "cpu_model"];
-        dataTableBody.innerHTML = "";
-        let totalRuns = 0;
-        let totalTime = 0;
-        let totalEmission = 0;
-        let totalEnergy = 0;
-        
-        for (let i = 0; i < dataObjects.length; i++) {
-           totalRuns += 1;
-           const newRow = dataTableBody.insertRow();
-           for (let j = 0; j < columnProperties.length; j++) {
-            const newCell = newRow.insertCell(j)
-            if (j == 0) {
-                const date = new Date(dataObjects[i][columnProperties[j]]);
+    let totalGpuEnergy = 0;
+    let totalRamEnergy = 0;
+    for (let i = 0; i < dataObjects.length; i++) {
+        totalCpuEnergy += dataObjects[i].cpu_energy;
+        totalGpuEnergy += dataObjects[i].gpu_energy;
+        totalRamEnergy += dataObjects[i].ram_energy;
+    };
+    return {totalCpuEnergy, totalGpuEnergy, totalRamEnergy};
+}
+
+function createEmissionArray(dataObjects, column){
+    let emissions = [];
+    for (let i = 0; i < dataObjects.length; i++) {
+        emissions.push(convertEmissions(dataObjects[i][column]));
+    };
+    return emissions;
+}
+
+function createTimeStampArray(dataObjects, column){
+    let timestamp = [];
+    for (let i = 0; i < dataObjects.length; i++){
+        timestamp.push(new Date(dataObjects[i][column]).toLocaleTimeString());
+    };
+    return timestamp;
+}
+
+
+
+function calcTotalsAndBuildTable(dataObjects) {
+    const columnProperties = ["timestamp", "duration", "emissions", "energy_consumed", "cpu_model"];
+    const dataTableBody = document.getElementById("dataTableBody");
+    dataTableBody.innerHTML = "";
+    let totalRuns = 0;
+    let totalTime = 0;
+    let totalEmission = 0;
+    let totalEnergy = 0;
+    for (let i = 0; i < dataObjects.length; i++) {
+        totalRuns += 1;
+        const newRow = dataTableBody.insertRow();
+        for (let j = 0; j < columnProperties.length; j++) {
+         const newCell = newRow.insertCell(j)
+         if (j == 0) {
+            const date = new Date(dataObjects[i][columnProperties[j]]);
                 const options = {
                     month: "long",
                     day: "numeric",
@@ -224,33 +247,57 @@ function processDashboardData(dataObjects) {
                 newCell.innerHTML = date.toLocaleDateString(undefined, options);
             } else if (j==1) {
                 const timeOneRun = dataObjects[i][columnProperties[j]];
-                totalTime += timeOneRun
-                newCell.innerHTML = ((timeOneRun)/60).toFixed(4);
+                newCell.innerHTML = ((timeOneRun)/SECONDS_TO_MINUTES).toFixed(4);
+                totalTime += timeOneRun;
             } else if (j==2) {
                 const timeOneEmission = dataObjects[i][columnProperties[j]];
+                newCell.innerHTML = (convertEmissions(timeOneEmission)).toFixed(7);
                 totalEmission += timeOneEmission;
-                newCell.innerHTML = ((timeOneEmission)*1000).toFixed(7);
             } else if (j == 3) {
                 const energyOneRun = dataObjects[i][columnProperties[j]];
-                totalEnergy += energyOneRun;
                 newCell.innerHTML = (energyOneRun).toFixed(8);
-            } else
-                newCell.innerHTML = dataObjects[i][columnProperties[j]];
-           }
-        }
-        totalTime = totalTime.toFixed(2);
-        totalEnergy = (totalEnergy).toFixed(5);
-        totalEmission = (totalEmission * 1000).toFixed(5);
-        updateStats(totalEmission, totalEnergy, totalRuns, totalTime);
+                totalEnergy += energyOneRun;
+            } else {
+                newCell.innerHTML = dataObjects[i][columnProperties[j]]; 
+            };
+        };
+    };
+    totalTime = totalTime.toFixed(2);
+    totalEnergy = (totalEnergy).toFixed(5);
+    totalEmission = convertEmissions(totalEmission).toFixed(5);
+    return {totalTime, totalEnergy, totalEmission, totalRuns}
+}
+
+
+
+function processDashboardData(dataObjects) {
+    if (dataObjects.length === 0){
+        updateStats(0, 0, 0, 0);
+        const dataTableBody = document.getElementById("dataTableBody");
+        dataTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #999;">No data loaded. Please upload a CSV file.</td></tr>';
+    } else {
+
+        createEnergyChart(dataObjects);
+        createEmissionChart (
+            createTimeStampArray(dataObjects, 'timestamp'), 
+            createEmissionArray(dataObjects, 'emissions')
+        );
+
+        const information = calcTotalsAndBuildTable(dataObjects);
+      
+        
+        updateStats(information.totalEmission, information.totalEnergy, information.totalRuns, information.totalTime);
     }
 }
 
-function createEnergyChart(cpuEnergy, gpuEnergy, ramEnergy) {
+
+function createEnergyChart(dataObjects) {
     if (energyChartInstance) {
         energyChartInstance.destroy(); 
     }
+    const energyTotals = calculateEnergyTotals(dataObjects);
     const energyChart = document.getElementById("energy-chart");
-    const yValues = [cpuEnergy, gpuEnergy, ramEnergy];
+    const yValues = [energyTotals.totalCpuEnergy, energyTotals.totalGpuEnergy, energyTotals.totalRamEnergy];
     const barColors = ["#92BBDE", "#4C8EC8", "#1C3D5A"];
     const xValues = ["CPU", "GPU", "RAM"];
     if (!energyChart) return;
@@ -304,4 +351,5 @@ function resetData() {
     }
     let dataObjects = [];
     processDashboardData(dataObjects);
-}   
+}
+
